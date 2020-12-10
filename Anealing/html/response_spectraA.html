@@ -1,0 +1,144 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>response_spectraA</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-04-09"><meta name="DC.source" content="response_spectraA.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% Linear elastic response response spectra</span>
+<span class="comment">%</span>
+<span class="comment">% Written by Eduardo Miranda and marios Kyriakides on 10/27/05</span>
+<span class="comment">%</span>
+
+<span class="keyword">function</span> [sa]=response_spectraA(accel,xi,dt,d0,v0)
+
+<span class="comment">% initializes vectors where response parameters will be stored</span>
+t1=zeros(100,1);
+sa=zeros(100,1);
+sv=zeros(100,1);
+sd=zeros(100,1);
+psa=zeros(100,1);
+psv=zeros(100,1);
+
+<span class="keyword">for</span> i=1:100;
+    t1(i)=i*0.05;
+    <span class="comment">% Performs response history analysis using recursive method</span>
+    [rd,rv,ra,aa,f]=sdofrha(accel,t1(i),xi,dt,d0,v0);
+
+    <span class="comment">% Computes peaks</span>
+    <span class="keyword">if</span> max(max(aa),max(abs(aa)))&gt;sa(i);
+        sa(i)=max(max(aa),max(abs(aa)));
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> max(max(rv),max(abs(rv)))&gt;sv(i);
+        sv(i)=max(max(rv),max(abs(rv)));
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> max(max(rd),max(abs(rd)))&gt;sd(i);
+        sd(i)=max(max(rd),max(abs(rd)));
+    <span class="keyword">end</span>
+    psa(i)=4*pi*pi*sd(i)/t1(i)/t1(i);
+    psv(i)=2*pi*sd(i)/t1(i);
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Input argument "accel" is undefined.
+
+Error in ==&gt; response_spectraA at 19
+    [rd,rv,ra,aa,f]=sdofrha(accel,t1(i),xi,dt,d0,v0);
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.12<br></p></div><!--
+##### SOURCE BEGIN #####
+% Linear elastic response response spectra
+%
+% Written by Eduardo Miranda and marios Kyriakides on 10/27/05
+%
+
+function [sa]=response_spectraA(accel,xi,dt,d0,v0)
+
+% initializes vectors where response parameters will be stored
+t1=zeros(100,1);
+sa=zeros(100,1);
+sv=zeros(100,1);
+sd=zeros(100,1);
+psa=zeros(100,1);
+psv=zeros(100,1);
+
+for i=1:100;
+    t1(i)=i*0.05;
+    % Performs response history analysis using recursive method
+    [rd,rv,ra,aa,f]=sdofrha(accel,t1(i),xi,dt,d0,v0);
+
+    % Computes peaks
+    if max(max(aa),max(abs(aa)))>sa(i); 
+        sa(i)=max(max(aa),max(abs(aa)));
+    end
+    if max(max(rv),max(abs(rv)))>sv(i);
+        sv(i)=max(max(rv),max(abs(rv)));
+    end
+    if max(max(rd),max(abs(rd)))>sd(i);
+        sd(i)=max(max(rd),max(abs(rd)));
+    end
+    psa(i)=4*pi*pi*sd(i)/t1(i)/t1(i);
+    psv(i)=2*pi*sd(i)/t1(i);
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

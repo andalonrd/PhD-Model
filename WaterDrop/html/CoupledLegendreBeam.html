@@ -1,0 +1,280 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>CoupledLegendreBeam</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-04-11"><meta name="DC.source" content="CoupledLegendreBeam.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [ Aout, tel ] =CoupledLegendreBeam(X,alp,d,Tn,dmp)
+
+tic;
+warning(<span class="string">'off'</span>,<span class="string">'MATLAB:nearlySingularMatrix'</span>);
+
+<span class="keyword">if</span> d==0;
+
+    d=0.0001;
+
+<span class="keyword">end</span>
+
+T1 = importdata(<span class="string">'T1.txt'</span>);
+
+dalp = T1(1,3)-T1(1,2);
+dd = T1(3,1)-T1(2,1);
+
+T2 = importdata(<span class="string">'T2.txt'</span>);
+T3 = importdata(<span class="string">'T3.txt'</span>);
+T4 = importdata(<span class="string">'T4.txt'</span>);
+T5 = importdata(<span class="string">'T5.txt'</span>);
+
+Nalp = round(alp/dalp)+2;
+Nd = round(d/dd)+2;
+
+Ts(1) = T1(Nd,Nalp);
+Ts(2) = T2(Nd,Nalp);
+Ts(3) = T3(Nd,Nalp);
+Ts(4) = T4(Nd,Nalp);
+Ts(5) = T5(Nd,Nalp);
+
+clear(<span class="string">'T1'</span>,<span class="string">'T2'</span>,<span class="string">'T3'</span>,<span class="string">'T4'</span>,<span class="string">'T5'</span>);
+
+MPF1 = importdata(<span class="string">'MPF1.txt'</span>);
+MPF2 = importdata(<span class="string">'MPF2.txt'</span>);
+MPF3 = importdata(<span class="string">'MPF3.txt'</span>);
+MPF4 = importdata(<span class="string">'MPF4.txt'</span>);
+MPF5 = importdata(<span class="string">'MPF5.txt'</span>);
+
+MPF(1) = MPF1(Nd,Nalp);
+MPF(2) = MPF2(Nd,Nalp);
+MPF(3) = MPF3(Nd,Nalp);
+MPF(4) = MPF4(Nd,Nalp);
+MPF(5) = MPF5(Nd,Nalp);
+
+clear(<span class="string">'MPF1'</span>,<span class="string">'MPF2'</span>,<span class="string">'MPF3'</span>,<span class="string">'MPF4'</span>,<span class="string">'MPF5'</span>);
+
+
+Nx = length(X);
+Aout = zeros(Nx+2,5);
+
+<span class="keyword">if</span> X(Nx) == 1
+
+    X(Nx)=0.99999;
+
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> length(dmp) == 1
+
+    dmp =ones(5,1)*dmp;
+
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> j=1:5
+
+Aout(1,j) = Tn*Ts(j)/Ts(1);
+Aout(2,j) = dmp(j);
+
+[Pr A] = MCE(alp,d,Ts(j));
+
+x =0.999999*sqrt(1-d);
+
+Ps = LegPDs(Pr(1,1),x);
+Qs = LegQDs(Pr(1,1),x);
+Mh1 = MhlDs(Pr(1,2),x);
+Mhl2 = Mhl2Ds(Pr(1,2),x);
+
+ModeL = A(1,1)*Ps(1,1)+A(2,1)*Qs(1,1)+A(3,1)*Mh1(1,1)+Mhl2(1,1);
+
+
+    <span class="keyword">for</span> i=1:Nx
+
+        <span class="keyword">if</span> X(i) == 1
+
+            X(i) = 0.999999;
+
+        <span class="keyword">end</span>
+
+        x = X(i)*sqrt(1-d);
+
+        Ps = LegPDs(Pr(1,1),x);
+        Qs = LegQDs(Pr(1,1),x);
+        Mh1 = MhlDs(Pr(1,2),x);
+        Mhl2 = Mhl2Ds(Pr(1,2),x);
+
+        Aout(i+2,j) = MPF(j)/ModeL*(A(1,1)*Ps(1,1)+A(2,1)*Qs(1,1)+A(3,1)*Mh1(1,1)+Mhl2(1,1));
+
+    <span class="keyword">end</span>
+
+ tel = toc;
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Input argument "d" is undefined.
+
+Error in ==&gt; CoupledLegendreBeam at 7
+if d==0;
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.12<br></p></div><!--
+##### SOURCE BEGIN #####
+
+function [ Aout, tel ] =CoupledLegendreBeam(X,alp,d,Tn,dmp)
+
+tic;
+warning('off','MATLAB:nearlySingularMatrix');
+
+if d==0;
+
+    d=0.0001;
+
+end
+
+T1 = importdata('T1.txt');
+
+dalp = T1(1,3)-T1(1,2);
+dd = T1(3,1)-T1(2,1);
+
+T2 = importdata('T2.txt');
+T3 = importdata('T3.txt');
+T4 = importdata('T4.txt');
+T5 = importdata('T5.txt');
+
+Nalp = round(alp/dalp)+2;
+Nd = round(d/dd)+2;
+
+Ts(1) = T1(Nd,Nalp);
+Ts(2) = T2(Nd,Nalp);
+Ts(3) = T3(Nd,Nalp);
+Ts(4) = T4(Nd,Nalp);
+Ts(5) = T5(Nd,Nalp);
+
+clear('T1','T2','T3','T4','T5');
+
+MPF1 = importdata('MPF1.txt');
+MPF2 = importdata('MPF2.txt');
+MPF3 = importdata('MPF3.txt');
+MPF4 = importdata('MPF4.txt');
+MPF5 = importdata('MPF5.txt');
+
+MPF(1) = MPF1(Nd,Nalp);
+MPF(2) = MPF2(Nd,Nalp);
+MPF(3) = MPF3(Nd,Nalp);
+MPF(4) = MPF4(Nd,Nalp);
+MPF(5) = MPF5(Nd,Nalp);
+
+clear('MPF1','MPF2','MPF3','MPF4','MPF5');
+
+
+Nx = length(X);
+Aout = zeros(Nx+2,5);
+
+if X(Nx) == 1
+    
+    X(Nx)=0.99999;
+
+end
+
+if length(dmp) == 1
+    
+    dmp =ones(5,1)*dmp;
+
+end
+
+for j=1:5
+
+Aout(1,j) = Tn*Ts(j)/Ts(1);    
+Aout(2,j) = dmp(j);
+
+[Pr A] = MCE(alp,d,Ts(j));
+
+x =0.999999*sqrt(1-d);
+    
+Ps = LegPDs(Pr(1,1),x);
+Qs = LegQDs(Pr(1,1),x);
+Mh1 = MhlDs(Pr(1,2),x);
+Mhl2 = Mhl2Ds(Pr(1,2),x);
+    
+ModeL = A(1,1)*Ps(1,1)+A(2,1)*Qs(1,1)+A(3,1)*Mh1(1,1)+Mhl2(1,1);
+
+
+    for i=1:Nx
+
+        if X(i) == 1
+           
+            X(i) = 0.999999;
+            
+        end
+        
+        x = X(i)*sqrt(1-d);
+    
+        Ps = LegPDs(Pr(1,1),x);
+        Qs = LegQDs(Pr(1,1),x);
+        Mh1 = MhlDs(Pr(1,2),x);
+        Mhl2 = Mhl2Ds(Pr(1,2),x);
+    
+        Aout(i+2,j) = MPF(j)/ModeL*(A(1,1)*Ps(1,1)+A(2,1)*Qs(1,1)+A(3,1)*Mh1(1,1)+Mhl2(1,1));
+
+    end
+ 
+ tel = toc;   
+    
+end
+
+
+
+
+##### SOURCE END #####
+--></body></html>
